@@ -204,6 +204,25 @@ fn arabic_fonts_cover_arabic_text() {
 }
 
 #[test]
+fn noto_sans_covers_vietnamese_text() {
+    // Not every Latn font does (the Japanese ones stop short of the U+1EA0 block), so this is
+    // asserted on the font that is there for it.
+    let Some(f) = FONTS.iter().find(|f| f.family == "Noto Sans") else {
+        panic!("the manifest lists no Noto Sans");
+    };
+    let data = bytes(f);
+    let font = FontRef::new(&data).unwrap_or_else(|e| panic!("{}: {e}", f.file));
+    let charmap = font.charmap();
+    let text = concat!(
+        "ĂÂĐÊÔƠƯăâđêôơư",
+        "ÀÁẢÃẠẰẮẲẴẶẦẤẨẪẬÈÉẺẼẸỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌỒỐỔỖỘỜỚỞỠỢÙÚỦŨỤỪỨỬỮỰỲÝỶỸỴ",
+        "àáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵ",
+    );
+    let missing: String = text.chars().filter(|c| charmap.map(*c).is_none()).collect();
+    assert!(missing.is_empty(), "Noto Sans has no glyph for {missing:?}");
+}
+
+#[test]
 fn thai_fonts_cover_thai_text() {
     covers(
         "Thai",
